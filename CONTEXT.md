@@ -1,5 +1,13 @@
 # Ingredient Ordering — CRUD Demo
 
+## Writing & Formatting Preferences
+
+- Prefer clear and explicit format over ambiguous shorthand — even if more verbose
+- Do not compromise content length or established writing style for brevity
+- Adapt to match this preference; do not default to collapsed or minified patterns
+
+---
+
 Fullstack webapp where domain is the demo. High school students browse available ingredients (app acts as a market), add to cart, and submit a lunch order. Admin manages stock. Each API protocol (REST → GQL → gRPC) is demonstrated using real domain entities, not dummy data.
 
 ---
@@ -53,16 +61,24 @@ _Avoid_: cart (cart is pre-submit UI state, not a persisted entity)
 
 ---
 
-## Protocol → Domain Mapping
+## API Experiment Plan
 
-| Protocol | Serves | Reason |
+**Strategy**: REST-first. Build the full domain in REST, feel the friction, then add GQL alongside it for comparison. gRPC dropped — proto codegen + transport overhead is out of scope for this demo.
+
+### Phase 1 — REST (current)
+Full CRUD for `ingredients` and `orders` over HTTP. Swap in-memory store for Postgres. This is the baseline.
+
+### Phase 2 — GQL (alongside REST, same DB)
+Add `/graphql` endpoint. Implement student-facing read side only — ingredient filtering and order status queries. These are where REST's over-fetching / multiple round-trip pain shows up most clearly. Order *submission* stays REST (simple POST, GQL mutation adds no insight).
+
+| Protocol | Scope | Why here |
 |---|---|---|
-| REST | Ingredient CRUD (admin) + Order management | Resource-first; easy to demo HTTP verbs |
-| GQL | Meal planning query (student) | Flexible filtering, nested ingredient+order queries; schema-first contrast to REST |
-| gRPC | Order submission at peak | High-throughput streaming; handles 5k weekly burst |
+| REST | Full CRUD — `ingredients` + `orders` (admin + student writes) | Baseline; teaches HTTP verbs + resource design |
+| GQL | Read side — ingredient queries + order status (student) | Contrast: same data, schema-first vs resource-first |
 
-**Resource vs Schema**: REST organises around resource nouns (`/ingredients`, `/orders`). GQL organises around a typed schema (graph of entities). Same data, different mental model — core comparison of the experiment.
+**Resource vs Schema**: REST organises around resource nouns (`/ingredients`, `/orders`). GQL organises around a typed schema (graph of entities). Same DB, different mental model — core comparison of the experiment.
 _Avoid_: "endpoint-driven vs query-driven" (too abstract without context)
+_Avoid_: gRPC (out of scope)
 
 ---
 
@@ -72,9 +88,9 @@ _Avoid_: "endpoint-driven vs query-driven" (too abstract without context)
 Auto-loads `*.routes.js` from `src/routes/`. CORS enabled. Baseline for comparing API styles. Endpoints: `/crud/ingredients`, `/orders` (planned).
 _Avoid_: "RESTful microservice"
 
-**GraphQL API** (planned, port `4000`):
-Single `/graphql` endpoint. Queries + mutations mirror REST operations. Students see how schema-first differs from route-first. Same DB.
-_Avoid_: "GraphQL gateway", "federation"
+**GraphQL API** (Phase 2, port `4000`):
+Single `/graphql` endpoint. Ingredient queries + order status queries only — read side. Added alongside REST on same DB so the two can be compared directly.
+_Avoid_: "GraphQL gateway", "federation", full mutation parity with REST
 
 **Frontend** (`frontend/`, React 18 + Vite, port `5173`):
 Ingredient browse → cart → order form → confirmation. Integrates REST first, then swapped/compared with GQL. Live API log panel (teaching tool shows raw HTTP traffic).
@@ -96,8 +112,7 @@ _Avoid_: "database cluster", "sharded DB"
 | `backend/src/routes/index.js` | Auto-loads `*.routes.js`, mounts at `/<name>` |
 | `backend/src/main.js` | Bootstrap: Express, health check at `/health` |
 | `frontend/src/App.jsx` | Ingredient list, CRUD form, ApiLog, toasts |
-| `backend/src/gql/CRUD.gql` | GQL schema stub (empty — next phase) |
-| `backend/src/proto/a.proto` | gRPC proto stub (empty — next phase) |
+| `backend/src/gql/CRUD.gql` | GQL schema (empty — Phase 2) |
 
 ---
 
