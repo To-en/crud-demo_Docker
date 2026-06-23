@@ -107,12 +107,58 @@ _Avoid_: "database cluster", "sharded DB"
 
 | File | Role |
 |---|---|
-| `backend/src/models/ingredients.js` | In-memory store + seed data. Exports `ingredients[]`, `bumpId()` |
-| `backend/src/routes/crud.routes.js` | REST CRUD for `/crud/ingredients` |
-| `backend/src/routes/index.js` | Auto-loads `*.routes.js`, mounts at `/<name>` |
-| `backend/src/main.js` | Bootstrap: Express, health check at `/health` |
-| `frontend/src/App.jsx` | Ingredient list, CRUD form, ApiLog, toasts |
-| `backend/src/gql/CRUD.gql` | GQL schema (empty — Phase 2) |
+| `backend/src/main.js` | Express bootstrap — mounts `/api` router, health check at `/health` |
+| `backend/src/routes/index.js` | Auto-loads `*.routes.js`, mounts each at `/api/<filename>` |
+| `backend/src/models/index.js` | Sequelize model registry — exports `db.Ingre`, `db.Order`, `db.User`, `db.Admin` |
+| `backend/src/models/ingredient.model.js` | Ingredient Sequelize model — maps to `crud_market.ingredients` |
+| `backend/src/models/order.model.js` | Order Sequelize model — parallel arrays `ingreId[]` + `qty[]` |
+| `backend/src/models/user.model.js` | User model — student and teacher/admin, holds `budget` field |
+| `backend/src/models/school.model.js` | School model — central budget pool (`crud_market.school`) |
+| `backend/src/controllers/ingredient.controller.js` | CRUD handlers for ingredient listings (admin) |
+| `backend/src/controllers/order.controller.js` | Submit order + confirm/cancel order status (deducts budget on confirm) |
+| `backend/src/controllers/order-history.controller.js` | Student-facing order history — list, search, edit, view bill, export |
+| `backend/src/middleware/auth.middleware.js` | JWT validation middleware — sets `req.user`; `requireRole`, `requireClassOwnership` guards |
+| `backend/src/sequelize.js` | Sequelize instance — reads `DATABASE_URL` from config |
+| `backend/src/config.js` | Loads `.env` via dotenv + dotenv-expand |
+| `backend/db/create.psql` | DDL — creates `crud_market` schema and all tables |
+| `backend/db/mock.psql` | Seed data — school budget, users, ingredients (Thai), orders |
+| `frontend/src/App.jsx` | Ingredient browse → cart → order form → confirmation; live API log panel |
+| `backend/src/gql/CRUD.gql` | GQL schema stub (empty — Phase 2) |
+
+---
+
+## API Endpoint Groups
+
+### Ingredient Market System
+Managed by admin. Students browse read-only. Admin creates/updates/deletes stock.
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| GET | `/api/ingredient/ingredient` | Public | List all ingredients (filter by category, stock) |
+| GET | `/api/ingredient/ingredient/search` | Public | Search ingredient by name or id |
+| POST | `/api/ingredient/ingredient/create` | Admin (role 2) | Create new ingredient listing |
+| PUT | `/api/ingredient/ingredient/:id` | Admin (role 2) | Update ingredient (price, stock, name) |
+| DELETE | `/api/ingredient/ingredient/:id` | Admin (role 2) | Soft-delete ingredient |
+
+### Ordering System
+Student submits cart as order. Budget not deducted until teacher/admin confirms.
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| POST | `/api/order/` | Authenticated | Submit order — creates record with `status: 0 (pending)` |
+| PATCH | `/api/order/:id/status` | Teacher / Admin | Confirm or cancel order — deducts student budget on confirm |
+
+### Order History Keeping
+Student views and manages their own past orders.
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| POST | `/api/order-history/order/history` | Authenticated | List own past orders (paginated) |
+| GET | `/api/order-history/order/history/search` | Authenticated | Search own orders by name or id |
+| PATCH | `/api/order-history/order/history/:id` | Authenticated (class owner) | Edit order — only when `status = 0` (pending) |
+| GET | `/api/order-history/order/history/:id` | Authenticated | View full bill detail for one order |
+| GET | `/api/order-history/order/history/:id/export` | Authenticated | Export bill as PDF or CSV |
+| DELETE | `/api/order-history/order/history/:id` | Teacher / Admin + class owner | Delete order from history |
 
 ---
 
