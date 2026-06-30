@@ -7,9 +7,6 @@
 [Objective] 
 - End goal
 [Task]
-- Task and subtask bullet list
+- Specified action to steer, do not over use.
 [Remark]
 - ...
-
-## Prompt format JSON
-

@@ -66,3 +66,45 @@ fetch(url, { headers: { Authorization: `Bearer ${token}` } })
 4. Open `/cart` → accessible
 5. Wait 30min or manually expire token → next API call auto-refreshes silently
 6. Logout → `/cart` redirects to `/login` again
+
+
+**1. สร้าง Context + Provider** ← มีแล้วใน [auth.context.jsx](vscode-webview://0l35c22pd5fj62atfanmda0aifrqdbcj8kbb1q02i31cqgn0kmba/frontend/src/context/auth.context.jsx)
+
+```js
+const AuthContext = createContext(null)
+export function AuthProvider({ children }) { ... }
+export function useAuth() { return useContext(AuthContext) }
+```
+
+---
+
+**2. Wrap app ด้วย Provider** ← ยังไม่ได้ทำ ต้องเพิ่มใน [main.jsx](vscode-webview://0l35c22pd5fj62atfanmda0aifrqdbcj8kbb1q02i31cqgn0kmba/frontend/src/main.jsx)
+
+```jsx
+import { AuthProvider } from "./context/auth.context";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <AuthProvider>   {/* ← wrap ตรงนี้ */}
+      <App />
+    </AuthProvider>
+  </React.StrictMode>
+);
+```
+
+---
+
+**3. ใช้ใน component ไหนก็ได้** ที่อยู่ข้างใน Provider
+
+```jsx
+import { useAuth } from "../context/auth.context";
+
+function Navbar() {
+  const { user, isLoggedIn } = useAuth();
+  return <div>{isLoggedIn ? user.name : "Guest"}</div>
+}
+```
+
+---
+
+กฎเดียว: component ที่ `useAuth()` ต้องอยู่ **ข้างใน** `<AuthProvider>` ใน tree — ถ้าอยู่นอกจะได้ `null` กลับมา

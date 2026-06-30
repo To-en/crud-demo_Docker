@@ -1,0 +1,16 @@
+# .codex/config.toml
+
+default_permissions = "dev-workspace"
+approval_policy = "on-request"
+
+[permissions.dev-workspace.filesystem]
+":minimal" = "read"
+":tmpdir" = "write"
+":slash_tmp" = "write"
+
+[permissions.dev-workspace.filesystem.":workspace_roots"]
+"." = "write"
+".git" = "write"
+
+[features]
+multi_agent = true

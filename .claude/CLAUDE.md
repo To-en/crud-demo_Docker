@@ -2,22 +2,21 @@
 
 ### COMMUNICATION PREFERENCE
 - Ask back if question is vague
-- Questions written in `./INQUIRY.md` are preferred
+- Prompting question back to user as interactive form with `./.claude/INQUIRY.md` when user calls "init-chat".
+- When I mentioned "handoff agent" check `./.agents` first , if no agent name were specified, just call regular codex without giving the agent instruction
 
 ### Primary objective
 - Ingredient ordering from for high school student to learn how to cook
 - Preserve codebase integrity — be careful with permission settings in `~/.claude/settings.json` and `./claude/settings.json`
 
-### Task (subtask)
-- Demo and experiment CRUD endpoint using REST, GQL , grpc (Last one only mention if I prompt) 
-- UX UI design -> Backend integration walk through 
+### Do it on first encounter (Do again if prompted)
+- Project overview: Write `./.claude/memory/project-context.md` after quick glance at code base
+- Interview user: Prompt user with interactive forms to fill in `./memory/user-profile.md` and `./memory/feedback-communication.md`
 
-### CONTEXT MANAGEMENT
-- READ `./CONTEXT.md` to be reminded of the project overview
-- BUFFER.md stores short-term memory in two #H1 sections (two topic instances)
-    - Use when context is large or complex (e.g. whole-repo architecture, multiple docs)
-    - Any planning draft can be stored here
-    - Notify before overwriting `./BUFFER.md`, except in automode
+### CONTEXT AND MEMORY MANAGEMENT
+- Own/new project: run `/grill-with-docs` to build `./CONTEXT.md` through interview
+- Cloned/existing repo/ Complex and big code base: skip this step. Let the user gain preliminary insight first.
++ READ `./CONTEXT.md` OR `./.claude/memory/project-context.md` to be reminded of project context.
 
 ## graphify
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
