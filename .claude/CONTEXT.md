@@ -186,8 +186,9 @@ Tables: `ingredients`, `orders`, `users`, `school`, `nutrition_facts`. Shared ac
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| POST | `/api/login` | Login — returns JWT access + refresh tokens |
-| POST | `/api/login/register` | Register new user |
+| POST | `/api/login` | Login — returns usernam + JWT access + refresh tokens |
+| POST | `/api/listClass` | List available class drop down |
+| POST | `/api/register` | Register new user |
 | POST | `/api/refresh` | Refresh access token |
 
 ### Budget
